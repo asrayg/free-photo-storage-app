@@ -1,0 +1,338 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		FB0000000000000000000001 /* GitPhotosApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0000000000000000000001 /* GitPhotosApp.swift */; };
+		FB0000000000000000000002 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0000000000000000000002 /* Models.swift */; };
+		FB0000000000000000000003 /* GitHubClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0000000000000000000003 /* GitHubClient.swift */; };
+		FB0000000000000000000004 /* Keychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0000000000000000000004 /* Keychain.swift */; };
+		FB0000000000000000000005 /* ImageUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0000000000000000000005 /* ImageUtil.swift */; };
+		FB0000000000000000000006 /* ImageCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0000000000000000000006 /* ImageCache.swift */; };
+		FB0000000000000000000007 /* PhotoStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0000000000000000000007 /* PhotoStore.swift */; };
+		FB0000000000000000000008 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0000000000000000000008 /* SignInView.swift */; };
+		FB0000000000000000000009 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0000000000000000000009 /* LibraryView.swift */; };
+		FB000000000000000000000A /* PhotoDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA000000000000000000000A /* PhotoDetailView.swift */; };
+		FB000000000000000000000B /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA000000000000000000000B /* SettingsView.swift */; };
+		FB000000000000000000000C /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA000000000000000000000C /* Config.swift */; };
+		FB000000000000000000000D /* DeviceFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA000000000000000000000D /* DeviceFlow.swift */; };
+		FB000000000000000000000E /* PhotoLibrarySync.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA000000000000000000000E /* PhotoLibrarySync.swift */; };
+		FB000000000000000000000F /* PongView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA000000000000000000000F /* PongView.swift */; };
+		FB0000000000000000000010 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FA0000000000000000000010 /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		FA0000000000000000000001 /* GitPhotosApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitPhotosApp.swift; sourceTree = "<group>"; };
+		FA0000000000000000000002 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		FA0000000000000000000003 /* GitHubClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubClient.swift; sourceTree = "<group>"; };
+		FA0000000000000000000004 /* Keychain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keychain.swift; sourceTree = "<group>"; };
+		FA0000000000000000000005 /* ImageUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageUtil.swift; sourceTree = "<group>"; };
+		FA0000000000000000000006 /* ImageCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCache.swift; sourceTree = "<group>"; };
+		FA0000000000000000000007 /* PhotoStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoStore.swift; sourceTree = "<group>"; };
+		FA0000000000000000000008 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
+		FA0000000000000000000009 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
+		FA000000000000000000000A /* PhotoDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoDetailView.swift; sourceTree = "<group>"; };
+		FA000000000000000000000B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		FA000000000000000000000C /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
+		FA000000000000000000000D /* DeviceFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceFlow.swift; sourceTree = "<group>"; };
+		FA000000000000000000000E /* PhotoLibrarySync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoLibrarySync.swift; sourceTree = "<group>"; };
+		FA000000000000000000000F /* PongView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PongView.swift; sourceTree = "<group>"; };
+		FA0000000000000000000010 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		FC0000000000000000000001 /* GitPhotos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GitPhotos.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FC0000000000000000000002 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		FE0000000000000000000004 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		FD0000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				FD0000000000000000000002 /* GitPhotos */,
+				FD0000000000000000000007 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		FD0000000000000000000002 /* GitPhotos */ = {
+			isa = PBXGroup;
+			children = (
+				FD0000000000000000000003 /* App */,
+				FD0000000000000000000004 /* Models */,
+				FD0000000000000000000005 /* Services */,
+				FD0000000000000000000006 /* Views */,
+				FA0000000000000000000010 /* Assets.xcassets */,
+				FC0000000000000000000002 /* Info.plist */,
+			);
+			path = GitPhotos;
+			sourceTree = "<group>";
+		};
+		FD0000000000000000000003 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				FA0000000000000000000001 /* GitPhotosApp.swift */,
+				FA000000000000000000000C /* Config.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		FD0000000000000000000004 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				FA0000000000000000000002 /* Models.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		FD0000000000000000000005 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				FA0000000000000000000003 /* GitHubClient.swift */,
+				FA0000000000000000000004 /* Keychain.swift */,
+				FA0000000000000000000005 /* ImageUtil.swift */,
+				FA0000000000000000000006 /* ImageCache.swift */,
+				FA0000000000000000000007 /* PhotoStore.swift */,
+				FA000000000000000000000D /* DeviceFlow.swift */,
+				FA000000000000000000000E /* PhotoLibrarySync.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		FD0000000000000000000006 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				FA0000000000000000000008 /* SignInView.swift */,
+				FA0000000000000000000009 /* LibraryView.swift */,
+				FA000000000000000000000A /* PhotoDetailView.swift */,
+				FA000000000000000000000B /* SettingsView.swift */,
+				FA000000000000000000000F /* PongView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		FD0000000000000000000007 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				FC0000000000000000000001 /* GitPhotos.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		FE0000000000000000000002 /* GitPhotos */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FE0000000000000000000007 /* Build configuration list for PBXNativeTarget "GitPhotos" */;
+			buildPhases = (
+				FE0000000000000000000003 /* Sources */,
+				FE0000000000000000000004 /* Frameworks */,
+				FE0000000000000000000005 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GitPhotos;
+			productName = GitPhotos;
+			productReference = FC0000000000000000000001 /* GitPhotos.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		FE0000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 1520;
+			};
+			buildConfigurationList = FE0000000000000000000006 /* Build configuration list for PBXProject "GitPhotos" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = FD0000000000000000000001;
+			productRefGroup = FD0000000000000000000007 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				FE0000000000000000000002 /* GitPhotos */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		FE0000000000000000000005 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FB0000000000000000000010 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		FE0000000000000000000003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FB0000000000000000000001 /* GitPhotosApp.swift in Sources */,
+				FB0000000000000000000002 /* Models.swift in Sources */,
+				FB0000000000000000000003 /* GitHubClient.swift in Sources */,
+				FB0000000000000000000004 /* Keychain.swift in Sources */,
+				FB0000000000000000000005 /* ImageUtil.swift in Sources */,
+				FB0000000000000000000006 /* ImageCache.swift in Sources */,
+				FB0000000000000000000007 /* PhotoStore.swift in Sources */,
+				FB0000000000000000000008 /* SignInView.swift in Sources */,
+				FB0000000000000000000009 /* LibraryView.swift in Sources */,
+				FB000000000000000000000A /* PhotoDetailView.swift in Sources */,
+				FB000000000000000000000B /* SettingsView.swift in Sources */,
+				FB000000000000000000000C /* Config.swift in Sources */,
+				FB000000000000000000000D /* DeviceFlow.swift in Sources */,
+				FB000000000000000000000E /* PhotoLibrarySync.swift in Sources */,
+				FB000000000000000000000F /* PongView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		FE0000000000000000000008 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		FE0000000000000000000009 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		FE000000000000000000000A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = GitPhotos/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.asray.gitphotos;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		FE000000000000000000000B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = GitPhotos/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.asray.gitphotos;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		FE0000000000000000000006 /* Build configuration list for PBXProject "GitPhotos" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FE0000000000000000000008 /* Debug */,
+				FE0000000000000000000009 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FE0000000000000000000007 /* Build configuration list for PBXNativeTarget "GitPhotos" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FE000000000000000000000A /* Debug */,
+				FE000000000000000000000B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = FE0000000000000000000001 /* Project object */;
+}
