@@ -39,7 +39,7 @@ struct GitPhotosApp: App {
     var body: some Scene {
         WindowGroup {
             if let store = appState.store {
-                LibraryView(store: store)
+                RootView(store: store)
                     .environment(appState)
                     .id(store.primary.login)
             } else {

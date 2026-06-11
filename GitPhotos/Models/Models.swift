@@ -16,6 +16,49 @@ struct Photo: Codable, Identifiable, Hashable {
     var createdAt: Date           // EXIF capture date when available, else upload time
     var uploadedAt: Date
     var localIdentifier: String?  // PHAsset id, set for auto-synced photos so we never re-upload
+    var favorite: Bool = false
+    var trashed: Bool = false
+    var trashedAt: Date?
+
+    init(id: String, filename: String, repo: String, owner: String?, path: String, thumbPath: String,
+         size: Int64, sha: String, thumbSha: String, width: Int, height: Int, createdAt: Date,
+         uploadedAt: Date, localIdentifier: String? = nil, favorite: Bool = false,
+         trashed: Bool = false, trashedAt: Date? = nil) {
+        self.id = id; self.filename = filename; self.repo = repo; self.owner = owner
+        self.path = path; self.thumbPath = thumbPath; self.size = size; self.sha = sha
+        self.thumbSha = thumbSha; self.width = width; self.height = height
+        self.createdAt = createdAt; self.uploadedAt = uploadedAt; self.localIdentifier = localIdentifier
+        self.favorite = favorite; self.trashed = trashed; self.trashedAt = trashedAt
+    }
+
+    // Custom decode so older manifests (without the newer fields) still load.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        filename = try c.decode(String.self, forKey: .filename)
+        repo = try c.decode(String.self, forKey: .repo)
+        owner = try c.decodeIfPresent(String.self, forKey: .owner)
+        path = try c.decode(String.self, forKey: .path)
+        thumbPath = try c.decode(String.self, forKey: .thumbPath)
+        size = try c.decode(Int64.self, forKey: .size)
+        sha = try c.decode(String.self, forKey: .sha)
+        thumbSha = try c.decode(String.self, forKey: .thumbSha)
+        width = try c.decode(Int.self, forKey: .width)
+        height = try c.decode(Int.self, forKey: .height)
+        createdAt = try c.decode(Date.self, forKey: .createdAt)
+        uploadedAt = try c.decode(Date.self, forKey: .uploadedAt)
+        localIdentifier = try c.decodeIfPresent(String.self, forKey: .localIdentifier)
+        favorite = try c.decodeIfPresent(Bool.self, forKey: .favorite) ?? false
+        trashed = try c.decodeIfPresent(Bool.self, forKey: .trashed) ?? false
+        trashedAt = try c.decodeIfPresent(Date.self, forKey: .trashedAt)
+    }
+}
+
+/// A titled run of photos (a day, a month) used by the timeline grid.
+struct PhotoSection: Identifiable {
+    let id: Int
+    let title: String
+    var photos: [Photo]
 }
 
 /// Byte accounting for one store repo so we know when to shard.

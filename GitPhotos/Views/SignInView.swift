@@ -59,10 +59,6 @@ struct SignInView: View {
     private var header: some View {
         Section {
             VStack(spacing: 12) {
-                Image("AppLogo")
-                    .resizable()
-                    .frame(width: 96, height: 96)
-                    .clipShape(RoundedRectangle(cornerRadius: 22))
                 Text("GitPhotos")
                     .font(.largeTitle.bold())
                 Text("Your photo library, stored for free in private GitHub repos. Storage shards are created automatically as your library grows.")

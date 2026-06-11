@@ -102,21 +102,64 @@ final class PhotoStore {
 
     // MARK: - Derived state
 
-    var photosByMonth: [(month: String, photos: [Photo])] {
-        let sorted = manifest.photos.sorted { $0.createdAt > $1.createdAt }
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM yyyy"
-        var groups: [(month: String, photos: [Photo])] = []
+    /// Everything in the library (excludes trashed photos).
+    var libraryPhotos: [Photo] { manifest.photos.filter { !$0.trashed } }
+    var favoritePhotos: [Photo] { libraryPhotos.filter(\.favorite) }
+    var trashedPhotos: [Photo] {
+        manifest.photos.filter(\.trashed).sorted { ($0.trashedAt ?? .distantPast) > ($1.trashedAt ?? .distantPast) }
+    }
+
+    /// Groups photos into day sections (Today / Yesterday / "Mon, Jun 9"), newest first.
+    func dailySections(_ photos: [Photo]) -> [PhotoSection] {
+        let sorted = photos.sorted { $0.createdAt > $1.createdAt }
+        let cal = Calendar.current
+        var sections: [PhotoSection] = []
+        var currentDay: Date?
         for photo in sorted {
-            let label = formatter.string(from: photo.createdAt)
-            if groups.last?.month == label {
-                groups[groups.count - 1].photos.append(photo)
+            let day = cal.startOfDay(for: photo.createdAt)
+            if day != currentDay {
+                currentDay = day
+                sections.append(PhotoSection(id: sections.count, title: Self.dayTitle(day, cal: cal), photos: [photo]))
             } else {
-                groups.append((month: label, photos: [photo]))
+                sections[sections.count - 1].photos.append(photo)
             }
         }
-        return groups
+        return sections
     }
+
+    /// Groups photos into month sections ("June 2025"), newest first.
+    func monthSections(_ photos: [Photo]) -> [PhotoSection] {
+        let sorted = photos.sorted { $0.createdAt > $1.createdAt }
+        var sections: [PhotoSection] = []
+        var currentLabel: String?
+        for photo in sorted {
+            let label = Self.monthFormatter.string(from: photo.createdAt)
+            if label != currentLabel {
+                currentLabel = label
+                sections.append(PhotoSection(id: sections.count, title: label, photos: [photo]))
+            } else {
+                sections[sections.count - 1].photos.append(photo)
+            }
+        }
+        return sections
+    }
+
+    private static func dayTitle(_ day: Date, cal: Calendar) -> String {
+        if cal.isDateInToday(day) { return "Today" }
+        if cal.isDateInYesterday(day) { return "Yesterday" }
+        let sameYear = cal.isDate(day, equalTo: Date(), toGranularity: .year)
+        return (sameYear ? dayFormatter : dayYearFormatter).string(from: day)
+    }
+
+    private static let dayFormatter: DateFormatter = {
+        let f = DateFormatter(); f.dateFormat = "EEE, MMM d"; return f
+    }()
+    private static let dayYearFormatter: DateFormatter = {
+        let f = DateFormatter(); f.dateFormat = "EEE, MMM d, yyyy"; return f
+    }()
+    private static let monthFormatter: DateFormatter = {
+        let f = DateFormatter(); f.dateFormat = "MMMM yyyy"; return f
+    }()
 
     var totalBytes: Int64 { manifest.repos.reduce(0) { $0 + $1.bytes } }
 
@@ -366,11 +409,48 @@ final class PhotoStore {
         }
     }
 
-    // MARK: - Delete
+    // MARK: - Favorite / Trash (manifest-only, no blob changes)
 
-    func delete(_ photo: Photo) async { await delete([photo]) }
+    /// Applies a mutation to the matching photos and saves the manifest.
+    private func updatePhotos(_ ids: Set<String>, message: String, _ transform: @escaping (inout Photo) -> Void) async {
+        guard !ids.isEmpty else { return }
+        for i in manifest.photos.indices where ids.contains(manifest.photos[i].id) {
+            transform(&manifest.photos[i])
+        }
+        do {
+            try await saveManifest(message: message) { m in
+                for i in m.photos.indices where ids.contains(m.photos[i].id) {
+                    transform(&m.photos[i])
+                }
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
 
-    func delete(_ photos: [Photo]) async {
+    func setFavorite(_ photo: Photo, _ value: Bool) async {
+        await updatePhotos([photo.id], message: "\(value ? "Favorite" : "Unfavorite") \(photo.id)") { $0.favorite = value }
+    }
+
+    /// Soft-delete: moves photos to Trash (kept on GitHub until permanently deleted).
+    func trash(_ photos: [Photo]) async {
+        let now = Date()
+        await updatePhotos(Set(photos.map(\.id)), message: "Trash \(photos.count) photo(s)") {
+            $0.trashed = true; $0.trashedAt = now
+        }
+    }
+
+    func restore(_ photos: [Photo]) async {
+        await updatePhotos(Set(photos.map(\.id)), message: "Restore \(photos.count) photo(s)") {
+            $0.trashed = false; $0.trashedAt = nil
+        }
+    }
+
+    // MARK: - Permanent delete
+
+    func permanentlyDelete(_ photo: Photo) async { await permanentlyDelete([photo]) }
+
+    func permanentlyDelete(_ photos: [Photo]) async {
         guard !photos.isEmpty else { return }
         var removed: [Photo] = []
         for photo in photos {
