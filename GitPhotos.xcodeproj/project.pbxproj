@@ -21,8 +21,10 @@
 		FB000000000000000000000C /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA000000000000000000000C /* Config.swift */; };
 		FB000000000000000000000D /* DeviceFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA000000000000000000000D /* DeviceFlow.swift */; };
 		FB000000000000000000000E /* PhotoLibrarySync.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA000000000000000000000E /* PhotoLibrarySync.swift */; };
-		FB000000000000000000000F /* PongView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA000000000000000000000F /* PongView.swift */; };
 		FB0000000000000000000010 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FA0000000000000000000010 /* Assets.xcassets */; };
+		FB0000000000000000000011 /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0000000000000000000011 /* Account.swift */; };
+		FB0000000000000000000012 /* PhotoEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0000000000000000000012 /* PhotoEditorView.swift */; };
+		FB0000000000000000000013 /* TokenHelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0000000000000000000013 /* TokenHelpView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,8 +42,10 @@
 		FA000000000000000000000C /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		FA000000000000000000000D /* DeviceFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceFlow.swift; sourceTree = "<group>"; };
 		FA000000000000000000000E /* PhotoLibrarySync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoLibrarySync.swift; sourceTree = "<group>"; };
-		FA000000000000000000000F /* PongView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PongView.swift; sourceTree = "<group>"; };
 		FA0000000000000000000010 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		FA0000000000000000000011 /* Account.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Account.swift; sourceTree = "<group>"; };
+		FA0000000000000000000012 /* PhotoEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoEditorView.swift; sourceTree = "<group>"; };
+		FA0000000000000000000013 /* TokenHelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenHelpView.swift; sourceTree = "<group>"; };
 		FC0000000000000000000001 /* GitPhotos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GitPhotos.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FC0000000000000000000002 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -91,6 +95,7 @@
 			isa = PBXGroup;
 			children = (
 				FA0000000000000000000002 /* Models.swift */,
+				FA0000000000000000000011 /* Account.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -116,7 +121,8 @@
 				FA0000000000000000000009 /* LibraryView.swift */,
 				FA000000000000000000000A /* PhotoDetailView.swift */,
 				FA000000000000000000000B /* SettingsView.swift */,
-				FA000000000000000000000F /* PongView.swift */,
+				FA0000000000000000000012 /* PhotoEditorView.swift */,
+				FA0000000000000000000013 /* TokenHelpView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -206,7 +212,9 @@
 				FB000000000000000000000C /* Config.swift in Sources */,
 				FB000000000000000000000D /* DeviceFlow.swift in Sources */,
 				FB000000000000000000000E /* PhotoLibrarySync.swift in Sources */,
-				FB000000000000000000000F /* PongView.swift in Sources */,
+				FB0000000000000000000011 /* Account.swift in Sources */,
+				FB0000000000000000000012 /* PhotoEditorView.swift in Sources */,
+				FB0000000000000000000013 /* TokenHelpView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

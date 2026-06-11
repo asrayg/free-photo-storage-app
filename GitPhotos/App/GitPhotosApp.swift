@@ -9,23 +9,23 @@ final class AppState {
     var isSignedIn: Bool { store != nil }
 
     init() {
-        if let username = Keychain.load("username"), let token = Keychain.load("token") {
-            store = PhotoStore(client: GitHubClient(username: username, token: token))
+        let accounts = Keychain.loadAccounts()
+        if !accounts.isEmpty {
+            store = PhotoStore(accounts: accounts)
         }
     }
 
     /// Validates the token against the GitHub API (which also tells us the
-    /// username), then persists both. Works for OAuth and manual tokens alike.
+    /// username), then persists it. Works for OAuth and manual tokens alike.
     func signIn(token: String) async throws {
-        let username = try await GitHubClient.login(token: token)
-        Keychain.save(username, for: "username")
-        Keychain.save(token, for: "token")
-        store = PhotoStore(client: GitHubClient(username: username, token: token))
+        let login = try await GitHubClient.login(token: token)
+        let accounts = [Account(login: login, token: token)]
+        Keychain.saveAccounts(accounts)
+        store = PhotoStore(accounts: accounts)
     }
 
     func signOut() {
-        Keychain.delete("username")
-        Keychain.delete("token")
+        Keychain.clearAccounts()
         store = nil
         Task { await ImageCache.shared.clearAll() }
     }
@@ -41,7 +41,7 @@ struct GitPhotosApp: App {
             if let store = appState.store {
                 LibraryView(store: store)
                     .environment(appState)
-                    .id(store.client.username)
+                    .id(store.primary.login)
             } else {
                 SignInView()
                     .environment(appState)

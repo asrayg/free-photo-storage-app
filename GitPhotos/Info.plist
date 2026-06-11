@@ -5,9 +5,9 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Photon</string>
+	<string>GitPhotos</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Photon backs up the photos in your library to your own private GitHub repositories.</string>
+	<string>GitPhotos backs up the photos in your library to your own private GitHub repositories.</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>

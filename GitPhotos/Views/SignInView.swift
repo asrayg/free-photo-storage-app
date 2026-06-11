@@ -17,6 +17,7 @@ struct SignInView: View {
     @State private var showManualEntry = Config.githubClientID.isEmpty
     @State private var isWorking = false
     @State private var errorMessage: String?
+    @State private var showTokenHelp = false
 
     private var oauthAvailable: Bool { !Config.githubClientID.isEmpty }
 
@@ -49,6 +50,9 @@ struct SignInView: View {
                 }
             }
         }
+        .sheet(isPresented: $showTokenHelp) {
+            TokenHelpView()
+        }
         .onDisappear { flowTask?.cancel() }
     }
 
@@ -59,7 +63,7 @@ struct SignInView: View {
                     .resizable()
                     .frame(width: 96, height: 96)
                     .clipShape(RoundedRectangle(cornerRadius: 22))
-                Text("Photon")
+                Text("GitPhotos")
                     .font(.largeTitle.bold())
                 Text("Your photo library, stored for free in private GitHub repos. Storage shards are created automatically as your library grows.")
                     .font(.subheadline)
@@ -132,7 +136,7 @@ struct SignInView: View {
     }
 
     private var manualSection: some View {
-        Section("Personal access token") {
+        Section {
             SecureField("ghp_…", text: $manualToken)
                 .textContentType(.password)
                 .textInputAutocapitalization(.never)
@@ -147,12 +151,26 @@ struct SignInView: View {
                 }
             }
             .disabled(manualToken.isEmpty || isWorking)
-            VStack(alignment: .leading, spacing: 8) {
-                Text("GitHub → Settings → Developer settings → Personal access tokens → Generate new token (classic) → check the **repo** scope. Stored only in your device's Keychain.")
-                Link("Open GitHub token settings", destination: URL(string: "https://github.com/settings/tokens/new?scopes=repo&description=GitPhotos")!)
+        } header: {
+            HStack {
+                Text("Personal access token")
+                Spacer()
+                Button {
+                    showTokenHelp = true
+                } label: {
+                    Label("How to get a token", systemImage: "info.circle")
+                        .labelStyle(.titleAndIcon)
+                        .font(.caption)
+                        .textCase(nil)
+                }
             }
-            .font(.footnote)
-            .foregroundStyle(.secondary)
+        } footer: {
+            Button {
+                showTokenHelp = true
+            } label: {
+                Text("Don't have a token? Tap ⓘ above for step-by-step instructions.")
+                    .font(.footnote)
+            }
         }
     }
 

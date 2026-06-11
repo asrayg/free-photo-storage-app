@@ -8,6 +8,13 @@ struct PhotoDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var currentID: String?
     @State private var confirmDelete = false
+    @State private var editTarget: EditTarget?
+    @State private var loadingEditor = false
+
+    private struct EditTarget: Identifiable {
+        let id = UUID()
+        let image: UIImage
+    }
 
     private var photos: [Photo] {
         store.photosByMonth.flatMap(\.photos)
@@ -35,10 +42,22 @@ struct PhotoDetailView: View {
                     Button("Done") { dismiss() }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(role: .destructive) {
-                        confirmDelete = true
-                    } label: {
-                        Image(systemName: "trash")
+                    HStack {
+                        Button {
+                            openEditor()
+                        } label: {
+                            if loadingEditor {
+                                ProgressView().tint(.white)
+                            } else {
+                                Image(systemName: "slider.horizontal.3")
+                            }
+                        }
+                        .disabled(loadingEditor)
+                        Button(role: .destructive) {
+                            confirmDelete = true
+                        } label: {
+                            Image(systemName: "trash")
+                        }
                     }
                 }
             }
@@ -51,8 +70,24 @@ struct PhotoDetailView: View {
                     }
                 }
             }
+            .fullScreenCover(item: $editTarget) { target in
+                if let photo = currentPhoto {
+                    PhotoEditorView(store: store, photo: photo, original: target.image)
+                }
+            }
         }
         .onAppear { currentID = initial.id }
+    }
+
+    private func openEditor() {
+        guard let photo = currentPhoto else { return }
+        loadingEditor = true
+        Task {
+            if let image = await store.fullImage(for: photo) {
+                editTarget = EditTarget(image: image)
+            }
+            loadingEditor = false
+        }
     }
 
     private static let titleFormatter: DateFormatter = {

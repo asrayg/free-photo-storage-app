@@ -5,6 +5,7 @@ struct Photo: Codable, Identifiable, Hashable {
     var id: String                // UUID string, also used in file paths
     var filename: String          // display name
     var repo: String              // store repo name, e.g. "gitphotos-store-001"
+    var owner: String?            // GitHub account login that holds this repo (nil = primary)
     var path: String              // "photos/<id>.<ext>"
     var thumbPath: String         // "thumbs/<id>.jpg"
     var size: Int64               // bytes of the full-res file
@@ -19,6 +20,7 @@ struct Photo: Codable, Identifiable, Hashable {
 
 /// Byte accounting for one store repo so we know when to shard.
 struct StoreRepo: Codable, Hashable {
+    var owner: String?            // GitHub account login (nil = primary)
     var name: String
     var bytes: Int64
 }

@@ -1,17 +1,22 @@
-# Photon
+# GitPhotos
 
 A Google-Photos-style iOS app that uses **your own GitHub account as free photo storage**.
 
-(The Xcode target/bundle id is still `GitPhotos`/`com.asray.gitphotos`; the user-facing name and icon are "Photon".)
-
 ## Features
 
-- **Auto-sync from Photos** — turn it on once in Settings and Photon backs up your whole library,
+- **Auto-sync from Photos** — turn it on once in Settings and GitPhotos backs up your whole library,
   then watches for new shots and uploads them automatically while the app is open. Photos already
   uploaded are tracked by their `PHAsset` id so nothing is ever uploaded twice.
-- **Photon Pong** — a built-in neon arcade mini-game (Settings → Arcade). Classic Pong with a
-  twist: the ball trails light, speeds up on every rally, and your paddle shrinks the longer you
-  last. Beat your best and put your initials on the leaderboard.
+- **Edit photos** — a Google-Photos-style editor (open a photo → slider icon). Adjust
+  brightness/contrast/saturation/exposure, apply filter presets (Vivid, Mono, Noir, Fade, Chrome,
+  Instant, Process), crop to common aspect ratios, and rotate. Saving overwrites the photo's blobs
+  in place. Built on Core Image.
+- **Remove photos** — delete a single photo from its viewer, or tap **Select** (or long-press a
+  thumbnail) to multi-select and remove a batch at once. Removal deletes the blobs from GitHub and
+  updates the index.
+- **Multiple storage accounts** — start with one GitHub account; add more in Settings → Storage
+  accounts. New photos are placed on whichever account has the most room, spreading a large library
+  across several accounts. The first (primary) account holds the index and can't be removed.
 
 ## How it works
 
@@ -77,10 +82,12 @@ GitPhotos/
   Services/PhotoStore.swift     manifest sync, auto-sharding, upload/delete
   Services/ImageCache.swift     memory + disk image cache
   Services/ImageUtil.swift      EXIF inspection, thumbnail generation
+  Models/Account.swift          GitHub account + multi-account Keychain storage
   Services/Keychain.swift       token storage
   Services/PhotoLibrarySync.swift  auto-sync: watches the photo library, uploads new photos
   Views/                        sign-in, library grid, photo viewer, settings
-  Views/PongView.swift          Photon Pong arcade mini-game + leaderboard
+  Views/PhotoEditorView.swift   Core Image editor (adjust / filters / crop / rotate)
+  Views/TokenHelpView.swift     "how to get a token" modal
   Assets.xcassets               app icon + logo
 ```
 

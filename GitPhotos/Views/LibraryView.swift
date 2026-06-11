@@ -6,6 +6,9 @@ struct LibraryView: View {
     @Bindable var store: PhotoStore
     @State private var pickedItems: [PhotosPickerItem] = []
     @State private var selectedPhoto: Photo?
+    @State private var isSelecting = false
+    @State private var selection: Set<String> = []
+    @State private var confirmDeleteSelection = false
 
     private let columns = [GridItem(.adaptive(minimum: 110, maximum: 160), spacing: 2)]
 
@@ -23,25 +26,48 @@ struct LibraryView: View {
                     grid
                 }
             }
-            .navigationTitle("Photon")
+            .navigationTitle(isSelecting ? "\(selection.count) selected" : "GitPhotos")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    PhotosPicker(selection: $pickedItems, maxSelectionCount: 100, matching: .images) {
-                        Image(systemName: "plus")
+                    if isSelecting {
+                        Button("Done") { isSelecting = false; selection = [] }
+                    } else {
+                        PhotosPicker(selection: $pickedItems, maxSelectionCount: 100, matching: .images) {
+                            Image(systemName: "plus")
+                        }
+                        .disabled(store.upload.isActive)
                     }
-                    .disabled(store.upload.isActive)
                 }
                 ToolbarItem(placement: .topBarLeading) {
-                    NavigationLink {
-                        SettingsView(store: store)
-                    } label: {
-                        Image(systemName: "gearshape")
+                    if isSelecting {
+                        Button("Cancel") { isSelecting = false; selection = [] }
+                    } else {
+                        NavigationLink {
+                            SettingsView(store: store)
+                        } label: {
+                            Image(systemName: "gearshape")
+                        }
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    if !isSelecting && !store.manifest.photos.isEmpty {
+                        Button("Select") { isSelecting = true }
                     }
                 }
             }
             .safeAreaInset(edge: .bottom) {
                 if store.upload.isActive {
                     uploadBanner
+                } else if isSelecting {
+                    selectionBar
+                }
+            }
+            .confirmationDialog("Remove \(selection.count) photo(s) from GitHub?", isPresented: $confirmDeleteSelection, titleVisibility: .visible) {
+                Button("Remove \(selection.count)", role: .destructive) {
+                    let toDelete = store.manifest.photos.filter { selection.contains($0.id) }
+                    isSelecting = false
+                    selection = []
+                    Task { await store.delete(toDelete) }
                 }
             }
             .fullScreenCover(item: $selectedPhoto) { photo in
@@ -77,8 +103,18 @@ struct LibraryView: View {
                     Section {
                         LazyVGrid(columns: columns, spacing: 2) {
                             ForEach(group.photos) { photo in
-                                ThumbnailCell(store: store, photo: photo)
-                                    .onTapGesture { selectedPhoto = photo }
+                                ThumbnailCell(store: store, photo: photo, isSelected: selection.contains(photo.id), showSelection: isSelecting)
+                                    .onTapGesture {
+                                        if isSelecting {
+                                            toggle(photo)
+                                        } else {
+                                            selectedPhoto = photo
+                                        }
+                                    }
+                                    .onLongPressGesture {
+                                        if !isSelecting { isSelecting = true }
+                                        toggle(photo)
+                                    }
                             }
                         }
                     } header: {
@@ -92,6 +128,28 @@ struct LibraryView: View {
                 }
             }
         }
+    }
+
+    private func toggle(_ photo: Photo) {
+        if selection.contains(photo.id) { selection.remove(photo.id) }
+        else { selection.insert(photo.id) }
+    }
+
+    private var selectionBar: some View {
+        HStack {
+            Button(role: .destructive) {
+                confirmDeleteSelection = true
+            } label: {
+                Label("Remove", systemImage: "trash")
+            }
+            .disabled(selection.isEmpty)
+            Spacer()
+            Text("\(selection.count) selected").font(.subheadline).foregroundStyle(.secondary)
+        }
+        .padding(12)
+        .background(.bar, in: RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal)
+        .padding(.bottom, 4)
     }
 
     private var uploadBanner: some View {
@@ -111,6 +169,8 @@ struct LibraryView: View {
 struct ThumbnailCell: View {
     let store: PhotoStore
     let photo: Photo
+    var isSelected = false
+    var showSelection = false
     @State private var image: UIImage?
 
     var body: some View {
@@ -126,6 +186,20 @@ struct ThumbnailCell: View {
                 } else {
                     Image(systemName: "photo")
                         .foregroundStyle(.tertiary)
+                }
+                if showSelection {
+                    Color.black.opacity(isSelected ? 0.35 : 0)
+                    VStack {
+                        Spacer()
+                        HStack {
+                            Spacer()
+                            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                                .font(.title3)
+                                .foregroundStyle(isSelected ? Color.accentColor : .white)
+                                .background(Circle().fill(.black.opacity(0.25)))
+                                .padding(5)
+                        }
+                    }
                 }
             }
         }

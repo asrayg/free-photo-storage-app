@@ -4,8 +4,17 @@ import PhotosUI
 import Photos
 import Observation
 
+enum StoreError: LocalizedError {
+    case message(String)
+    var errorDescription: String? {
+        if case .message(let m) = self { return m }
+        return nil
+    }
+}
+
 /// Orchestrates everything: the manifest in the index repo, automatic store-repo
-/// sharding, uploads, deletes, and image fetching.
+/// sharding (across one or more GitHub accounts), uploads, edits, deletes, and
+/// image fetching.
 @MainActor
 @Observable
 final class PhotoStore {
@@ -29,18 +38,69 @@ final class PhotoStore {
     private(set) var upload = UploadProgress()
     var errorMessage: String?
 
-    let client: GitHubClient
+    private(set) var accounts: [Account]
+    private var clients: [String: GitHubClient] = [:]
     var sync: PhotoLibrarySync!
 
-    init(client: GitHubClient) {
-        self.client = client
+    init(accounts: [Account]) {
+        self.accounts = accounts
+        rebuildClients()
         self.sync = PhotoLibrarySync(store: self)
     }
 
-    /// PHAsset ids already in the library — used to skip photos we've synced before.
-    var syncedLocalIDs: Set<String> {
-        Set(manifest.photos.compactMap(\.localIdentifier))
+    // MARK: - Accounts
+
+    /// The account that owns the index repo (source of truth).
+    var primary: Account { accounts[0] }
+    private var indexClient: GitHubClient { clients[primary.login]! }
+
+    private func rebuildClients() {
+        var dict: [String: GitHubClient] = [:]
+        for account in accounts {
+            dict[account.login] = GitHubClient(username: account.login, token: account.token)
+        }
+        clients = dict
     }
+
+    private func client(for owner: String?) -> GitHubClient? {
+        clients[owner ?? primary.login]
+    }
+
+    /// Adds another GitHub account that new photos can be stored on.
+    func addStorageAccount(token: String) async throws {
+        let login = try await GitHubClient.login(token: token)
+        guard !accounts.contains(where: { $0.login.lowercased() == login.lowercased() }) else {
+            throw StoreError.message("'\(login)' is already added.")
+        }
+        accounts.append(Account(login: login, token: token))
+        Keychain.saveAccounts(accounts)
+        rebuildClients()
+    }
+
+    /// Removes a non-primary storage account. Photos already stored there stay in
+    /// the manifest but become unreachable until the account is re-added.
+    func removeStorageAccount(_ login: String) {
+        guard login != primary.login else { return }
+        accounts.removeAll { $0.login == login }
+        Keychain.saveAccounts(accounts)
+        rebuildClients()
+    }
+
+    struct AccountUsage: Identifiable {
+        let account: Account
+        let bytes: Int64
+        let repos: [StoreRepo]
+        var id: String { account.login }
+    }
+
+    var storageByAccount: [AccountUsage] {
+        accounts.map { account in
+            let repos = manifest.repos.filter { ($0.owner ?? primary.login) == account.login }
+            return AccountUsage(account: account, bytes: repos.reduce(0) { $0 + $1.bytes }, repos: repos)
+        }
+    }
+
+    // MARK: - Derived state
 
     var photosByMonth: [(month: String, photos: [Photo])] {
         let sorted = manifest.photos.sorted { $0.createdAt > $1.createdAt }
@@ -60,17 +120,21 @@ final class PhotoStore {
 
     var totalBytes: Int64 { manifest.repos.reduce(0) { $0 + $1.bytes } }
 
+    /// PHAsset ids already in the library — used to skip photos we've synced before.
+    var syncedLocalIDs: Set<String> {
+        Set(manifest.photos.compactMap(\.localIdentifier))
+    }
+
     // MARK: - Bootstrap
 
-    /// Creates the index repo on first run and loads the manifest.
     func bootstrap() async {
         isLoading = true
         defer { isLoading = false }
         do {
-            if try await !client.repoExists(Self.indexRepo) {
-                try await client.createPrivateRepo(Self.indexRepo, description: "GitPhotos index — do not edit by hand")
+            if try await !indexClient.repoExists(Self.indexRepo) {
+                try await indexClient.createPrivateRepo(Self.indexRepo, description: "GitPhotos index — do not edit by hand")
                 let data = try JSONEncoder.manifest.encode(Manifest.empty)
-                manifestSha = try await client.putContent(
+                manifestSha = try await indexClient.putContent(
                     repo: Self.indexRepo, path: Self.manifestPath,
                     data: data, message: "Initialize manifest")
                 manifest = .empty
@@ -84,36 +148,31 @@ final class PhotoStore {
 
     private func loadManifest() async throws {
         do {
-            let meta = try await client.contentMeta(repo: Self.indexRepo, path: Self.manifestPath)
+            let meta = try await indexClient.contentMeta(repo: Self.indexRepo, path: Self.manifestPath)
             manifestSha = meta.sha
-            // The contents API inlines base64 content only for files <= 1 MB;
-            // bigger manifests need a separate raw fetch.
             let data: Data
             if let content = meta.content, let decoded = Data(base64Encoded: content, options: .ignoreUnknownCharacters), !decoded.isEmpty {
                 data = decoded
             } else {
-                data = try await client.rawContent(repo: Self.indexRepo, path: Self.manifestPath)
+                data = try await indexClient.rawContent(repo: Self.indexRepo, path: Self.manifestPath)
             }
             manifest = try JSONDecoder.manifest.decode(Manifest.self, from: data)
         } catch GitHubError.notFound {
-            // Index repo exists but manifest.json doesn't yet (e.g. interrupted first run).
             let data = try JSONEncoder.manifest.encode(Manifest.empty)
-            manifestSha = try await client.putContent(
+            manifestSha = try await indexClient.putContent(
                 repo: Self.indexRepo, path: Self.manifestPath,
                 data: data, message: "Initialize manifest")
             manifest = .empty
         }
     }
 
-    /// Writes the manifest back. On a sha conflict, reloads and lets `merge`
-    /// reapply this change on top of the fresh copy.
     private func saveManifest(message: String, merge: (inout Manifest) -> Void) async throws {
         var attempts = 0
         while true {
             attempts += 1
             do {
                 let data = try JSONEncoder.manifest.encode(manifest)
-                manifestSha = try await client.putContent(
+                manifestSha = try await indexClient.putContent(
                     repo: Self.indexRepo, path: Self.manifestPath,
                     data: data, message: message, sha: manifestSha)
                 return
@@ -126,69 +185,74 @@ final class PhotoStore {
 
     // MARK: - Sharding
 
-    /// Returns the store repo to upload `bytes` into, creating the next
-    /// `gitphotos-store-NNN` repo automatically when the current one is full.
-    private func repoForUpload(bytes: Int64) async throws -> String {
-        if let last = manifest.repos.last, last.bytes + bytes <= Self.repoByteCap {
-            return last.name
+    /// Picks the (account, repo) for the next upload. New shards are placed on the
+    /// storage account currently holding the least data, spreading photos across
+    /// accounts; a new repo is created automatically when the chosen one fills up.
+    private func repoForUpload(bytes: Int64) async throws -> (owner: String, name: String) {
+        var usage: [String: Int64] = [:]
+        for repo in manifest.repos { usage[repo.owner ?? primary.login, default: 0] += repo.bytes }
+        let target = accounts.min { (usage[$0.login] ?? 0) < (usage[$1.login] ?? 0) }?.login ?? primary.login
+
+        let targetRepos = manifest.repos.filter { ($0.owner ?? primary.login) == target }
+        if let last = targetRepos.last, last.bytes + bytes <= Self.repoByteCap {
+            return (target, last.name)
         }
-        let next = manifest.repos.count + 1
-        let name = Self.storeRepoPrefix + String(format: "%03d", next)
-        if try await !client.repoExists(name) {
-            try await client.createPrivateRepo(name, description: "GitPhotos storage shard \(next)")
+        let n = targetRepos.count + 1
+        let name = Self.storeRepoPrefix + String(format: "%03d", n)
+        guard let c = clients[target] else { throw StoreError.message("Missing credentials for \(target).") }
+        if try await !c.repoExists(name) {
+            try await c.createPrivateRepo(name, description: "GitPhotos storage shard \(n)")
         }
-        manifest.repos.append(StoreRepo(name: name, bytes: 0))
-        return name
+        manifest.repos.append(StoreRepo(owner: target, name: name, bytes: 0))
+        return (target, name)
     }
 
-    private func addBytes(_ bytes: Int64, to repoName: String, in m: inout Manifest) {
-        if let i = m.repos.firstIndex(where: { $0.name == repoName }) {
+    private func addBytes(_ bytes: Int64, owner: String, name: String, in m: inout Manifest) {
+        if let i = m.repos.firstIndex(where: { ($0.owner ?? primary.login) == owner && $0.name == name }) {
             m.repos[i].bytes = max(0, m.repos[i].bytes + bytes)
         } else if bytes > 0 {
-            m.repos.append(StoreRepo(name: repoName, bytes: bytes))
+            m.repos.append(StoreRepo(owner: owner, name: name, bytes: bytes))
         }
     }
 
     // MARK: - Upload
 
-    /// Uploads one image's bytes into the right shard and appends it to the
-    /// in-memory manifest. Shared by manual picks and auto-sync.
     private func ingest(data: Data, localIdentifier: String?, fallbackDate: Date?) async throws -> Photo? {
         guard let info = ImageUtil.inspect(data),
               let thumbData = ImageUtil.makeThumbnail(from: data) else { return nil }
         let id = UUID().uuidString.lowercased()
         let cost = Int64(data.count + thumbData.count)
-        let repoName = try await repoForUpload(bytes: cost)
+        let (owner, repoName) = try await repoForUpload(bytes: cost)
+        guard let c = clients[owner] else { throw StoreError.message("Missing credentials for \(owner).") }
         let path = "photos/\(id).\(info.fileExtension)"
         let thumbPath = "thumbs/\(id).jpg"
 
-        let sha = try await client.putContent(repo: repoName, path: path, data: data, message: "Add \(id)")
-        let thumbSha = try await client.putContent(repo: repoName, path: thumbPath, data: thumbData, message: "Add thumb \(id)")
+        let sha = try await c.putContent(repo: repoName, path: path, data: data, message: "Add \(id)")
+        let thumbSha = try await c.putContent(repo: repoName, path: thumbPath, data: thumbData, message: "Add thumb \(id)")
 
         let photo = Photo(
             id: id,
             filename: "IMG_\(id.prefix(8)).\(info.fileExtension)",
-            repo: repoName, path: path, thumbPath: thumbPath,
+            repo: repoName, owner: owner, path: path, thumbPath: thumbPath,
             size: Int64(data.count), sha: sha, thumbSha: thumbSha,
             width: info.width, height: info.height,
             createdAt: info.captureDate ?? fallbackDate ?? Date(),
             uploadedAt: Date(), localIdentifier: localIdentifier)
 
         manifest.photos.append(photo)
-        addBytes(cost, to: repoName, in: &manifest)
+        addBytes(cost, owner: owner, name: repoName, in: &manifest)
         _ = await ImageCache.shared.store(thumbData, for: "\(id)-thumb")
         _ = await ImageCache.shared.store(data, for: "\(id)-full")
         return photo
     }
 
-    /// Commits a batch of freshly ingested photos to the manifest in the index repo.
     private func persist(_ added: [Photo], verb: String) async {
         guard !added.isEmpty else { return }
         do {
             try await saveManifest(message: "\(verb) \(added.count) photo(s)") { m in
                 for photo in added where !m.photos.contains(where: { $0.id == photo.id }) {
                     m.photos.append(photo)
-                    self.addBytes(photo.size, to: photo.repo, in: &m)
+                    self.addBytes(photo.size, owner: photo.owner ?? self.primary.login, name: photo.repo, in: &m)
                 }
             }
         } catch {
@@ -219,7 +283,6 @@ final class PhotoStore {
         upload = UploadProgress()
     }
 
-    /// Auto-sync entry point: uploads photo-library assets we haven't seen before.
     func uploadAssets(_ assets: [PHAsset]) async {
         guard !assets.isEmpty else { return }
         upload = UploadProgress(total: assets.count)
@@ -246,11 +309,10 @@ final class PhotoStore {
         upload = UploadProgress()
     }
 
-    /// Reads the original file bytes for a photo-library asset.
     private static func assetData(_ asset: PHAsset) async -> Data? {
         await withCheckedContinuation { continuation in
             let options = PHImageRequestOptions()
-            options.isNetworkAccessAllowed = true    // pull from iCloud if needed
+            options.isNetworkAccessAllowed = true
             options.deliveryMode = .highQualityFormat
             options.version = .current
             PHImageManager.default().requestImageDataAndOrientation(for: asset, options: options) { data, _, _, _ in
@@ -259,20 +321,81 @@ final class PhotoStore {
         }
     }
 
+    // MARK: - Edit
+
+    /// Replaces a photo's bytes in place with an edited version (overwrites the
+    /// original and thumbnail blobs, keeping the same id and paths).
+    func replace(_ photo: Photo, withFullData data: Data) async {
+        guard let c = client(for: photo.owner) else {
+            errorMessage = "Missing credentials for \(photo.owner ?? primary.login)."
+            return
+        }
+        guard let info = ImageUtil.inspect(data),
+              let thumbData = ImageUtil.makeThumbnail(from: data) else {
+            errorMessage = "Couldn't process the edited image."
+            return
+        }
+        do {
+            let newSha = try await c.putContent(repo: photo.repo, path: photo.path, data: data, message: "Edit \(photo.id)", sha: photo.sha)
+            let newThumbSha = try await c.putContent(repo: photo.repo, path: photo.thumbPath, data: thumbData, message: "Edit thumb \(photo.id)", sha: photo.thumbSha)
+            let delta = Int64(data.count) - photo.size
+
+            if let i = manifest.photos.firstIndex(where: { $0.id == photo.id }) {
+                manifest.photos[i].sha = newSha
+                manifest.photos[i].thumbSha = newThumbSha
+                manifest.photos[i].size = Int64(data.count)
+                manifest.photos[i].width = info.width
+                manifest.photos[i].height = info.height
+                manifest.photos[i].uploadedAt = Date()
+            }
+            addBytes(delta, owner: photo.owner ?? primary.login, name: photo.repo, in: &manifest)
+            _ = await ImageCache.shared.store(data, for: "\(photo.id)-full")
+            _ = await ImageCache.shared.store(thumbData, for: "\(photo.id)-thumb")
+
+            try await saveManifest(message: "Edit \(photo.id)") { m in
+                if let i = m.photos.firstIndex(where: { $0.id == photo.id }) {
+                    m.photos[i].sha = newSha
+                    m.photos[i].thumbSha = newThumbSha
+                    m.photos[i].size = Int64(data.count)
+                    m.photos[i].width = info.width
+                    m.photos[i].height = info.height
+                }
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
     // MARK: - Delete
 
-    func delete(_ photo: Photo) async {
-        do {
-            try await client.deleteContent(repo: photo.repo, path: photo.path, sha: photo.sha, message: "Delete \(photo.id)")
-            try? await client.deleteContent(repo: photo.repo, path: photo.thumbPath, sha: photo.thumbSha, message: "Delete thumb \(photo.id)")
-            manifest.photos.removeAll { $0.id == photo.id }
-            addBytes(-photo.size, to: photo.repo, in: &manifest)
-            try await saveManifest(message: "Delete \(photo.id)") { m in
-                m.photos.removeAll { $0.id == photo.id }
-                self.addBytes(-photo.size, to: photo.repo, in: &m)
+    func delete(_ photo: Photo) async { await delete([photo]) }
+
+    func delete(_ photos: [Photo]) async {
+        guard !photos.isEmpty else { return }
+        var removed: [Photo] = []
+        for photo in photos {
+            guard let c = client(for: photo.owner) else { continue }
+            do {
+                try await c.deleteContent(repo: photo.repo, path: photo.path, sha: photo.sha, message: "Delete \(photo.id)")
+                try? await c.deleteContent(repo: photo.repo, path: photo.thumbPath, sha: photo.thumbSha, message: "Delete thumb \(photo.id)")
+                removed.append(photo)
+                manifest.photos.removeAll { $0.id == photo.id }
+                addBytes(-photo.size, owner: photo.owner ?? primary.login, name: photo.repo, in: &manifest)
+                await ImageCache.shared.remove("\(photo.id)-thumb")
+                await ImageCache.shared.remove("\(photo.id)-full")
+            } catch {
+                errorMessage = error.localizedDescription
             }
-            await ImageCache.shared.remove("\(photo.id)-thumb")
-            await ImageCache.shared.remove("\(photo.id)-full")
+        }
+        guard !removed.isEmpty else { return }
+        let ids = Set(removed.map(\.id))
+        do {
+            try await saveManifest(message: "Delete \(removed.count) photo(s)") { m in
+                m.photos.removeAll { ids.contains($0.id) }
+                for p in removed {
+                    self.addBytes(-p.size, owner: p.owner ?? self.primary.login, name: p.repo, in: &m)
+                }
+            }
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -292,7 +415,8 @@ final class PhotoStore {
         if let cached = await ImageCache.shared.image(for: cacheKey) {
             return cached
         }
-        guard let data = try? await client.rawContent(repo: photo.repo, path: path) else { return nil }
+        guard let c = client(for: photo.owner),
+              let data = try? await c.rawContent(repo: photo.repo, path: path) else { return nil }
         return await ImageCache.shared.store(data, for: cacheKey)
     }
 }
