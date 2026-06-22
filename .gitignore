@@ -1,0 +1,26 @@
+# macOS
+.DS_Store
+
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.ipa
+*.dSYM.zip
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/test_output
+fastlane/README.md
+
+# Ruby / bundler
+/.bundle/
+vendor/bundle/
+
+# Signing material — must never be committed
+*.p12
+*.p8
+*.mobileprovision
+*.cer

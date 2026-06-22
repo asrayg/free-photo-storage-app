@@ -1,0 +1,5 @@
+app_identifier("com.gitphotos.gitphotos") # The bundle identifier of your app
+apple_id(ENV["FASTLANE_APPLE_ID"])        # Your Apple Developer Portal username (unused when an App Store Connect API key is set)
+
+itc_team_id(ENV["ITC_TEAM_ID"])           # App Store Connect Team ID (optional)
+team_id("L6LUXM357X")                      # Developer Portal Team ID
