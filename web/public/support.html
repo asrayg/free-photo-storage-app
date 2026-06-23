@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GitPhotos — Support</title>
+<meta name="description" content="Help and support for GitPhotos: getting a GitHub token, sign-in, auto-sync, storage, privacy, and how to contact us." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d1117'/%3E%3Ccircle cx='16' cy='16' r='3' fill='none' stroke='%23ff5c8a' stroke-width='1.6'/%3E%3C/svg%3E" />
+<style>
+  :root{
+    --bg:#0a0c10;--bg-soft:#0e1117;--panel:#12161d;--line:#222a35;--line-soft:#1a2029;
+    --ink:#e6edf3;--ink-dim:#9aa7b4;--ink-faint:#6b7785;--accent:#ff5c8a;--accent-2:#4493f8;
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,"JetBrains Mono",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent-2)}a:hover{color:#79b3fb}
+  .wrap{width:100%;max-width:760px;margin:0 auto;padding:0 24px}
+  .mono{font-family:var(--mono)}
+  code{font-family:var(--mono);background:var(--bg-soft);border:1px solid var(--line-soft);padding:1px 6px;border-radius:5px;font-size:.9em;color:var(--ink)}
+
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(10,12,16,.72);backdrop-filter:saturate(160%) blur(12px);border-bottom:1px solid var(--line-soft)}
+  .nav-in{display:flex;align-items:center;justify-content:space-between;height:60px;width:100%;max-width:760px;margin:0 auto;padding:0 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:650;letter-spacing:-.01em;color:var(--ink);text-decoration:none}
+  .brand svg{width:26px;height:26px}
+  .nav-links a{color:var(--ink-dim);text-decoration:none;font-size:14px;margin-left:22px}
+  .nav-links a:hover{color:var(--ink)}
+
+  .head{padding:64px 0 8px}
+  .eyebrow{font-family:var(--mono);font-size:12.5px;letter-spacing:.04em;color:var(--accent);text-transform:uppercase;margin:0 0 14px}
+  h1{font-size:clamp(30px,5vw,44px);letter-spacing:-.03em;margin:0 0 14px;font-weight:720}
+  .sub{color:var(--ink-dim);font-size:18px;margin:0;max-width:34em}
+
+  .contact{display:flex;flex-wrap:wrap;gap:14px;margin:30px 0 8px}
+  .contact a{display:inline-flex;align-items:center;gap:9px;border:1px solid var(--line);background:var(--panel);
+    padding:12px 18px;border-radius:11px;color:var(--ink);text-decoration:none;font-weight:600;font-size:15px;transition:.16s}
+  .contact a:hover{border-color:#33404e;transform:translateY(-1px)}
+  .contact a.primary{background:var(--ink);color:#0a0c10;border-color:transparent}
+
+  section{padding:40px 0;border-top:1px solid var(--line-soft)}
+  h2{font-size:22px;letter-spacing:-.02em;margin:0 0 20px;font-weight:650}
+  h2 .hash{color:var(--ink-faint);font-family:var(--mono);font-weight:400;margin-right:8px}
+
+  details{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:2px 20px;margin-bottom:12px;transition:.18s}
+  details[open]{border-color:#2c3744}
+  summary{cursor:pointer;list-style:none;padding:18px 0;font-weight:600;font-size:16px;display:flex;justify-content:space-between;align-items:center;gap:14px}
+  summary::-webkit-details-marker{display:none}
+  summary .plus{flex:none;color:var(--ink-faint);font-family:var(--mono);transition:.2s}
+  details[open] summary .plus{transform:rotate(45deg);color:var(--accent)}
+  details .body{padding:0 0 20px;color:var(--ink-dim)}
+  details .body p{margin:0 0 12px}details .body p:last-child{margin-bottom:0}
+  ol{margin:0 0 12px;padding-left:22px;color:var(--ink-dim)}ol li{margin-bottom:7px}
+  .callout{border:1px solid var(--line);background:var(--bg-soft);border-radius:12px;padding:18px 20px;color:var(--ink-dim);font-size:14.5px}
+  .callout b{color:var(--ink)}
+
+  footer{border-top:1px solid var(--line-soft);padding:36px 0;color:var(--ink-faint);font-size:13.5px;margin-top:24px}
+  .foot-in{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+  .foot-in a{color:var(--ink-dim);text-decoration:none;margin-left:22px}.foot-in a:hover{color:var(--ink)}
+  .disclaimer{margin-top:16px;font-size:12px;color:#4d5763}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-in">
+    <a class="brand" href="/">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#12161d" stroke="#222a35"/><path d="M16 6a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38v-1.34c-2.23.49-2.7-1.07-2.7-1.07-.36-.93-.89-1.18-.89-1.18-.73-.5.05-.49.05-.49.8.06 1.23.83 1.23.83.71 1.23 1.87.87 2.33.67.07-.52.28-.87.5-1.07-1.78-.2-3.64-.89-3.64-3.96 0-.87.31-1.59.83-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.22 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.52.56.83 1.28.83 2.15 0 3.08-1.87 3.76-3.65 3.96.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 16 6Z" fill="#e6edf3"/><circle cx="16" cy="15" r="2.4" fill="none" stroke="#ff5c8a" stroke-width="1.4"/></svg>
+      GitPhotos
+    </a>
+    <nav class="nav-links">
+      <a href="/">Home</a>
+      <a href="/#faq">FAQ</a>
+      <a href="https://github.com/asrayg/free-photo-storage-app" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap head">
+    <p class="eyebrow">// support</p>
+    <h1>How can we help?</h1>
+    <p class="sub">Answers to common questions about GitPhotos, plus how to reach a human if you're stuck.</p>
+    <div class="contact">
+      <a class="primary" href="mailto:asraygopa@gmail.com?subject=GitPhotos%20Support">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+        Email support
+      </a>
+      <a href="https://github.com/asrayg/free-photo-storage-app/issues" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4m0 4h.01"/></svg>
+        Report an issue
+      </a>
+    </div>
+    <p style="color:var(--ink-faint);font-size:13.5px;margin-top:8px">We usually reply within a couple of days.</p>
+  </div>
+
+  <div class="wrap">
+
+    <section>
+      <h2><span class="hash">#</span>Getting started</h2>
+
+      <details open>
+        <summary>How do I sign in? <span class="plus">+</span></summary>
+        <div class="body">
+          <p>GitPhotos signs in with your GitHub account. You can either use a GitHub device code, or paste a <b>personal access token</b>. Tap <b>“How to get a token”</b> on the sign-in screen for in-app instructions.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>How do I create a GitHub token? <span class="plus">+</span></summary>
+        <div class="body">
+          <ol>
+            <li>On GitHub, go to <b>Settings → Developer settings → Personal access tokens</b>.</li>
+            <li>Create a <b>classic</b> token and enable the <code>repo</code> scope.</li>
+            <li>Copy the token and paste it into GitPhotos’ sign-in screen.</li>
+          </ol>
+          <p>The token is stored only in your device’s iOS Keychain — it never reaches us.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Do I need a paid GitHub plan? <span class="plus">+</span></summary>
+        <div class="body"><p>No. A free GitHub account includes unlimited private repositories, which is all GitPhotos needs.</p></div>
+      </details>
+    </section>
+
+    <section>
+      <h2><span class="hash">#</span>Backing up</h2>
+
+      <details>
+        <summary>How do I back up photos? <span class="plus">+</span></summary>
+        <div class="body"><p>Select photos and tap <b>Add</b> to upload them, or open <b>Collections → Settings</b> and turn on <b>Auto-sync</b> so new photos are backed up automatically.</p></div>
+      </details>
+
+      <details>
+        <summary>Why is my first backup slow? <span class="plus">+</span></summary>
+        <div class="body"><p>GitPhotos uses GitHub’s standard API, which allows roughly <b>1,500 photos per hour</b>. Large first-time backups simply continue across sessions until they finish.</p></div>
+      </details>
+
+      <details>
+        <summary>What is auto-sharding / “storage accounts”? <span class="plus">+</span></summary>
+        <div class="body">
+          <p>Each backup repository is capped at about <b>4.5&nbsp;GB</b>. When one fills up, GitPhotos automatically creates the next private repo. You can also add more GitHub accounts under <b>Settings → Storage accounts</b> to spread a large library across them. The primary account holds the index and can’t be removed.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>The app says photo access is off. <span class="plus">+</span></summary>
+        <div class="body"><p>GitPhotos needs permission to read your library so it can back photos up. Enable it in <b>iOS Settings → Privacy &amp; Security → Photos → GitPhotos</b>.</p></div>
+      </details>
+    </section>
+
+    <section>
+      <h2><span class="hash">#</span>Privacy &amp; your data</h2>
+
+      <details>
+        <summary>Can GitPhotos see my photos? <span class="plus">+</span></summary>
+        <div class="body"><p>No. There is no GitPhotos server. Photos go from your device straight to your own private GitHub repositories, and your access token stays in the iOS Keychain on your phone.</p></div>
+      </details>
+
+      <details>
+        <summary>How do I delete my backups or revoke access? <span class="plus">+</span></summary>
+        <div class="body">
+          <p>Your backups are just repositories on your GitHub account:</p>
+          <ol>
+            <li><b>Delete photos:</b> delete the backup repo(s) on GitHub.</li>
+            <li><b>Cut off the app:</b> revoke the personal access token in your GitHub settings, or sign out in the app.</li>
+          </ol>
+        </div>
+      </details>
+
+      <div class="callout">
+        <b>Still stuck?</b> Email <a href="mailto:asraygopa@gmail.com?subject=GitPhotos%20Support">asraygopa@gmail.com</a> with your device model, iOS version, and what you were doing when it happened — that helps us reproduce it fast.
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap foot-in">
+    <span>© 2026 GitPhotos</span>
+    <span>
+      <a href="/">Home</a>
+      <a href="mailto:asraygopa@gmail.com">Email</a>
+      <a href="https://github.com/asrayg/free-photo-storage-app" target="_blank" rel="noopener">GitHub</a>
+    </span>
+  </div>
+  <div class="wrap"><p class="disclaimer">GitPhotos is an independent project and is not affiliated with, endorsed by, or sponsored by GitHub, Inc.</p></div>
+</footer>
+
+</body>
+</html>
